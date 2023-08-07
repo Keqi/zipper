@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 require 'rails_helper'
 
 RSpec.describe SessionsController, type: :request do
@@ -38,7 +40,7 @@ RSpec.describe SessionsController, type: :request do
   describe '#destroy' do
     context 'when user has been previously signed in' do
       before do
-        as_signed_in_user(user: user)
+        as_signed_in_user(user:)
         post sign_out_path
       end
 

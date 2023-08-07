@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 require_relative 'support/authentication_spec_helper'
 
 require 'factory_bot'

@@ -1,10 +1,12 @@
+# frozen_string_literal: true
+
 class SessionsController < ApplicationController
   protect_from_forgery with: :null_session
 
   def create
     user = User.find_by(username: permitted_params[:username])
 
-    if user && user.authenticate(permitted_params[:password])
+    if user&.authenticate(permitted_params[:password])
       session[:user_id] = user.id
       render json: { message: 'You have been successfully signed in.' }, status: :ok
     else
@@ -17,7 +19,7 @@ class SessionsController < ApplicationController
       session[:user_id] = nil
       render json: { message: 'You have been successfully signed out.' }, status: :ok
     else
-      render json: { errors: "You are already signed out." }, status: :bad_request
+      render json: { errors: 'You are already signed out.' }, status: :bad_request
     end
   end
 

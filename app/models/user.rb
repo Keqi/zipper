@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 class User < ApplicationRecord
   PASSWORD_FORMAT = /\A
     (?=.*[A-Z]) # Must contain an uppercase character
