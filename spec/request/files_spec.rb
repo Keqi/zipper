@@ -9,7 +9,7 @@ RSpec.describe FilesController, type: :request do
   describe '#create' do
     context 'when user was unauthorized' do
       before do
-        post upload_path, params: { file: }, headers: { 'Authorization' => 'Bearer invalid-token' }
+        post files_path, params: { file: }, headers: { 'Authorization' => 'Bearer invalid-token' }
       end
 
       it 'does not upload the file' do
@@ -26,10 +26,8 @@ RSpec.describe FilesController, type: :request do
       let!(:token) { sign_in(username: user.username, password: 'Abcde12345!!') }
 
       before do
-        post upload_path, params: { file: }, headers: { 'Authorization' => "Bearer #{token}" }
+        post files_path, params: { file: }, headers: { 'Authorization' => "Bearer #{token}" }
       end
-
-      after { FileUtils.rm_rf(ActiveStorage::Blob.service.root) }
 
       it 'successfully uploads the file' do
         expect(user.files.attachments.count).to eq(1)
@@ -40,6 +38,48 @@ RSpec.describe FilesController, type: :request do
 
         expect(response.status).to eq(200)
         expect(body['message']).to eq('You have successfully uploaded the file.')
+      end
+    end
+  end
+
+  describe '#index' do
+    context 'when user was unauthorized' do
+      before do
+        get files_path, headers: { 'Authorization' => 'Bearer invalid-token' }
+      end
+
+      it 'returns 403 unauthorized status with no body' do
+        expect(response.status).to eq(403)
+        expect(response.body).to eq('')
+      end
+    end
+
+    context 'when user was authorized' do
+      let!(:token) { sign_in(username: user.username, password: 'Abcde12345!!') }
+
+      before do
+        user.files.attach(
+          io: File.open(Rails.root.join('spec', 'fixtures', 'files', 'test.txt')),
+          filename: 'test.txt'
+        )
+
+        get files_path, headers: { 'Authorization' => "Bearer #{token}" }
+      end
+
+      it 'returns 200 with list of uploaded files' do
+        body = JSON.parse(response.body)
+
+        expect(response.status).to eq(200)
+        expect(body['files'].size).to eq(1)
+      end
+
+      it 'returns details of the attachement' do
+        body = JSON.parse(response.body)
+        file_obj = body['files'].first
+
+        expect(file_obj['created_at']).to be
+        expect(file_obj['filename']).to eq('test.txt')
+        expect(file_obj['link']).to be
       end
     end
   end

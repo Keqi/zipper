@@ -1,7 +1,6 @@
 Rails.application.routes.draw do
   resources :users, only: :create
-
-  post 'upload', to: 'files#create'
+  resources :files, only: [:create, :index]
 
   post 'sign_in', to: 'sessions#create'
 end
