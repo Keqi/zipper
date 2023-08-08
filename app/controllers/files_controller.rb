@@ -19,12 +19,14 @@ class FilesController < ApplicationController
   end
 
   def create
-    file = FileZipper.new(file: params[:file]).zip
+    file_zipper = FileZipper.new(input_file: params[:file])
+    file_zipper.zip
 
-    if @current_user.files.attach(io: file, filename: File.basename(file.path))
+    if @current_user.files.attach(io: file_zipper.file, filename: File.basename(file_zipper.file.path))
       file = @current_user.files.attachments.order(created_at: :desc).first
 
       render json: {
+        password: file_zipper.password,
         link: rails_blob_url(file, disposition: 'attachment'),
         message: 'You have successfully uploaded the file.'
       }, status: :ok
