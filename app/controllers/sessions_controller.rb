@@ -7,19 +7,10 @@ class SessionsController < ApplicationController
     user = User.find_by(username: permitted_params[:username])
 
     if user&.authenticate(permitted_params[:password])
-      session[:user_id] = user.id
-      render json: { message: 'You have been successfully signed in.' }, status: :ok
+      token = TokenManager.encode(payload: { id: user.id })
+      render json: { token: }, status: :ok
     else
       render json: { errors: 'The username/password combination is invalid.' }, status: :bad_request
-    end
-  end
-
-  def destroy
-    if current_user
-      session[:user_id] = nil
-      render json: { message: 'You have been successfully signed out.' }, status: :ok
-    else
-      render json: { errors: 'You are already signed out.' }, status: :bad_request
     end
   end
 

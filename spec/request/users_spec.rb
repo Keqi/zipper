@@ -55,7 +55,7 @@ RSpec.describe UsersController, type: :request do
           body = JSON.parse(@response.body)
 
           too_short_msg = 'Password is too short (minimum is 12 characters)'
-          format_msg = 'Password must include: 1 uppercase, 1 lowercase, 1 digit and 1 special character'
+          format_msg = 'Password must include: 1 uppercase, 1 lowercase and 1 digit'
 
           expect(@response.status).to eq(400)
           expect(body['errors']).to include(too_short_msg)
@@ -73,11 +73,11 @@ RSpec.describe UsersController, type: :request do
         expect(User.count).to eq(1)
       end
 
-      it 'returns :created status with short message' do
+      it 'returns :created status with token' do
         body = JSON.parse(@response.body)
 
         expect(@response.status).to eq(201)
-        expect(body['message']).to include('User created.')
+        expect(body['token']).to_not eq(nil)
       end
     end
   end

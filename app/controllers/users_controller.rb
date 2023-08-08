@@ -7,8 +7,8 @@ class UsersController < ApplicationController
     user = User.new(permitted_params)
 
     if user.save
-      session[:user_id] = user.id
-      render json: { message: 'User created.' }, status: :created
+      token = TokenManager.encode(payload: { id: user.id })
+      render json: { token: }, status: :created
     else
       render json: { errors: user.errors.full_messages }, status: :bad_request
     end

@@ -7,11 +7,12 @@ class User < ApplicationRecord
     (?=.*\d) # Must contain a digit
   /x
 
+  has_many_attached :files
+
   validates :username, presence: true, uniqueness: true
-  validates :password, length: { minimum: 12 }
-  validates :password,
-            format: { with: PASSWORD_FORMAT,
-                      message: 'must include: 1 uppercase, 1 lowercase, 1 digit and 1 special character' }
+  validates :password, length: { minimum: 12 },
+                       format: { with: PASSWORD_FORMAT, message: 'must include: 1 uppercase, 1 lowercase and 1 digit' },
+                       unless: proc { |x| x.password.blank? }
 
   has_secure_password
 end
