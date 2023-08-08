@@ -1,5 +1,7 @@
 # frozen_string_literal: true
 
+require 'zip'
+
 class FilesController < ApplicationController
   protect_from_forgery with: :null_session
   before_action :authorize
@@ -17,7 +19,9 @@ class FilesController < ApplicationController
   end
 
   def create
-    if @current_user.files.attach(permitted_params[:file])
+    file = FileZipper.new(file: params[:file]).zip
+
+    if @current_user.files.attach(io: file, filename: File.basename(file.path))
       file = @current_user.files.attachments.order(created_at: :desc).first
 
       render json: {
