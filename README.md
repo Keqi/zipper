@@ -1,24 +1,17 @@
-# README
+# Zipper
 
-This README would normally document whatever steps are necessary to get the
-application up and running.
+The Zipper application is a JSON RESTful API allowing users to upload files to the local storage. Files are packed into a .zip file and encrypted with a strong random password. A user can authenticate themselves through JWT tokens and retrieve list of the uploaded files.
 
-Things you may want to cover:
+## Installation
 
-* Ruby version
+- Run `bundle install`
+- Copy the `.env.example` file into the `.env` file and add your database credentials.
+- Ask the owner of the repository to send you the `development.key` and `test.key` to decrypt credentials files.
 
-* System dependencies
+## Running tests
 
-* Configuration
+- Type `rspec` or `bundle exec rspec`
 
-* Database creation
+## Documentation
 
-* Database initialization
-
-* How to run the test suite
-
-* Services (job queues, cache servers, search engines, etc.)
-
-* Deployment instructions
-
-* ...
+- The documentation follows the [OpenAPI](https://swagger.io/specification/) convention and is generated using rswag gem. You access it at `/api/docs` endpoint or by reading the `/swagger/v1/swagger.yaml` file.
