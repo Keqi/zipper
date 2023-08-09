@@ -25,19 +25,35 @@ RSpec.describe FilesController, type: :request do
     context 'when user was authorized' do
       let!(:token) { sign_in(username: user.username, password: 'Abcde12345!!') }
 
-      before do
-        post files_path, params: { file: }, headers: { 'Authorization' => "Bearer #{token}" }
+      context 'when no file has been uploaded' do
+        before do
+          post files_path, params: {}, headers: { 'Authorization' => "Bearer #{token}" }
+        end
+
+        it 'returns status 400 with error message' do
+          body = JSON.parse(response.body)
+
+          expect(response.status).to eq(400)
+          expect(body['errors']).to eq('No file has been uploaded.')
+        end
       end
 
-      it 'successfully uploads the file' do
-        expect(user.files.attachments.count).to eq(1)
-      end
+      context 'when file has been uploaded' do
+        before do
+          post files_path, params: { file: }, headers: { 'Authorization' => "Bearer #{token}" }
+        end
 
-      it 'returns 200 with successful message' do
-        body = JSON.parse(response.body)
+        it 'successfully uploads the file' do
+          expect(user.files.attachments.count).to eq(1)
+        end
 
-        expect(response.status).to eq(200)
-        expect(body['message']).to eq('You have successfully uploaded the file.')
+        it 'returns status 200 with link and password to the zipped package' do
+          body = JSON.parse(response.body)
+
+          expect(response.status).to eq(200)
+          expect(body['link']).to be
+          expect(body['password']).to be
+        end
       end
     end
   end

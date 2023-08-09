@@ -14,7 +14,7 @@ class FileZipper
       output.write input_file.tempfile.read
     end
 
-    File.open(zip_filename, 'wb') {|f| f.write(buffer.string) }
+    File.binwrite(zip_filename, buffer.string)
 
     true
   end

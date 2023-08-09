@@ -15,4 +15,8 @@ class User < ApplicationRecord
                        unless: proc { |x| x.password.blank? }
 
   has_secure_password
+
+  def recently_uploaded_file
+    files.attachments.order(created_at: :desc).first
+  end
 end
