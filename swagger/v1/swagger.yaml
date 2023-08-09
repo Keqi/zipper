@@ -1,0 +1,176 @@
+openapi: 3.0.3
+info:
+  title: Zipper API
+  description: |-
+    The Zipper API provides framework to manage your files as .zip packages. The API implements endpoints to create and authenticate user as well as the ones to upload file and list all of your uploaded files.
+
+    Every request to upload or list your files is authorized through JWT token that is issued in the POST /tokens endpoint. User can upload a single file that is zipped by the application and stored in the local storage. In response, user receives link to the zipped package and password to open it.
+  contact:
+    email: maciej.nowak90@gmail.com
+  version: 1.0.0
+servers:
+  - url: http://localhost:3000/api/docs
+tags:
+  - name: user
+    description: layer for user management
+  - name: token
+    description: layer for authentication management
+  - name: file
+    description: layer for files management
+paths:
+  /users:
+    post:
+      tags:
+        - user
+      description: Registers a new user in the application
+      operationId: addUser
+      requestBody:
+        description: Creates a new user in the application
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/User'
+        required: true
+      responses:
+        '201':
+          description: 'Returns successful response with token to authenticate user'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Token'
+        '400':
+          description: Invalid input
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Errors'
+  /tokens:
+    post:
+      tags:
+        - token
+      description: Generates a new authentication JWT token for user. The token expires in 4 hours.
+      operationId: createToken
+      requestBody:
+        description: Generates a new authentication JWT token for user.
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/User'
+        required: true
+      responses:
+        '200':
+          description: 'Returns successful response with token to authenticate user'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Token'
+        '400':
+          description: Invalid input
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Errors'
+  /files:
+    get:
+      tags:
+        - file
+      description: Lists all of user uploaded files
+      operationId: listFiles
+      responses:
+        '200':
+          description: 'Returns list of all uploaded files in chronological order'
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  files:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        created_at:
+                          type: string
+                          example: '2023-08-08T09:05:21.700Z'
+                        filename:
+                          type: string
+                          example: 'my-resume.pdf'
+                        link:
+                          type: string
+                          example: 'http://example.org/link-to-zip-package.zip'
+      security:
+        - zipper_auth:
+            - read:files
+    post:
+      tags:
+        - file
+      description: Uploads a single file to the server. The file is zipped into a .zip package and encrypted with the random password.
+      operationId: createFile
+      requestBody:
+        description: Includes file parameter with uploaded file.
+        content:
+          application/form-data:
+            schema:
+              $ref: '#/components/schemas/File'
+        required: true
+      responses:
+        '200':
+          description: 'Returns successful response with link and password to the zip package'
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  link:
+                    type: string
+                    example: 'http://example.org/link-to-zip-package.zip'
+                  password:
+                    type: string
+                    example: 'random-password'
+        '400':
+          description: Invalid input
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Errors'
+      security:
+        - zipper_auth:
+            - write:files
+components:
+  schemas:
+    Token:
+      type: object
+      properties:
+        token:
+          type: string
+          example: 'eyJhbGciOiJIUzI1NiJ9.eyJpZCI6MiwiZXhwIjoxNjkxNTc3OTA2fQ.QwJm0SI-Cm2n2U0CjsxBk2wkklKIBTgeb9g-Z4z-g_Q'
+    Errors:
+      type: object
+      properties:
+        errors:
+          oneOf:
+            - type: string
+            - type: array
+          example: 'error message'
+    File:
+      type: object
+      properties:
+        file:
+          type: string
+          example: 'included file'
+    User:
+      type: object
+      properties:
+        username:
+          type: string
+          example: 'maciej.nowak'
+        password:
+          type: string
+          example: 'Abcde12345!!'
+      xml:
+        name: user
+  securitySchemes:
+    zipper_auth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
