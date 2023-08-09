@@ -6,7 +6,7 @@ RSpec.describe UsersController, type: :request do
   describe '#create' do
     context 'when user params do not pass validations' do
       context 'when username is not present' do
-        let(:params) { { username: nil, password: 'Abcde12345!!' } }
+        let(:params) { { username: nil, password: Faker::Internet.password(min_length: 12, special_characters: true) } }
 
         before { post users_path, params: }
 
@@ -23,10 +23,14 @@ RSpec.describe UsersController, type: :request do
       end
 
       context 'when username is not unique' do
-        let(:params) { { username: 'maciej.nowak', password: 'Abcde12345!!' } }
+        let(:params) do
+          { username:, password: Faker::Internet.password(min_length: 12, special_characters: true) }
+        end
+        let(:username) { Faker::Internet.username }
 
         before do
-          create(:user, username: 'maciej.nowak', password: 'Abcde12345!!')
+          create(:user, username:,
+                        password: Faker::Internet.password(min_length: 12, special_characters: true))
           post users_path, params:
         end
 
@@ -43,7 +47,12 @@ RSpec.describe UsersController, type: :request do
       end
 
       context 'when password is too short or doesnt match required format' do
-        let(:params) { { username: 'maciej.nowak', password: '123' } }
+        let(:params) do
+          {
+            username: Faker::Internet.username,
+            password: Faker::Internet.password(min_length: 6, max_length: 6, mix_case: false)
+          }
+        end
 
         before { post users_path, params: }
 
@@ -65,7 +74,12 @@ RSpec.describe UsersController, type: :request do
     end
 
     context 'when user params pass validations' do
-      let(:params) { { username: 'maciej.nowak', password: 'Abcde12345!!' } }
+      let(:params) do
+        {
+          username: Faker::Internet.username,
+          password: Faker::Internet.password(min_length: 12, special_characters: true)
+        }
+      end
 
       before { post users_path, params: }
 

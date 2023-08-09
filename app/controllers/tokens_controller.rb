@@ -1,6 +1,6 @@
 # frozen_string_literal: true
 
-class SessionsController < ApplicationController
+class TokensController < ApplicationController
   def create
     user = User.find_by(username: permitted_params[:username])
 

@@ -4,7 +4,15 @@ require 'rails_helper'
 
 RSpec.describe FilesController, type: :request do
   let!(:file) { fixture_file_upload('test.txt') }
-  let!(:user) { create(:user, username: 'maciej.nowak', password: 'Abcde12345!!') }
+  let!(:password) { Faker::Internet.password(min_length: 12, special_characters: true) }
+  let!(:user) { create(:user, username: Faker::Internet.username, password:) }
+
+  RSpec.shared_examples '/files - unauthorized' do
+    it 'returns 403 unauthorized status with no body' do
+      expect(response.status).to eq(403)
+      expect(response.body).to eq('')
+    end
+  end
 
   describe '#create' do
     context 'when user was unauthorized' do
@@ -16,14 +24,11 @@ RSpec.describe FilesController, type: :request do
         expect(user.files.attachments.count).to eq(0)
       end
 
-      it 'returns 403 unauthorized status with no body' do
-        expect(response.status).to eq(403)
-        expect(response.body).to eq('')
-      end
+      include_examples '/files - unauthorized'
     end
 
     context 'when user was authorized' do
-      let!(:token) { sign_in(username: user.username, password: 'Abcde12345!!') }
+      let!(:token) { sign_in(username: user.username, password:) }
 
       context 'when no file has been uploaded' do
         before do
@@ -64,14 +69,11 @@ RSpec.describe FilesController, type: :request do
         get files_path, headers: { 'Authorization' => 'Bearer invalid-token' }
       end
 
-      it 'returns 403 unauthorized status with no body' do
-        expect(response.status).to eq(403)
-        expect(response.body).to eq('')
-      end
+      include_examples '/files - unauthorized'
     end
 
     context 'when user was authorized' do
-      let!(:token) { sign_in(username: user.username, password: 'Abcde12345!!') }
+      let!(:token) { sign_in(username: user.username, password:) }
 
       before do
         user.files.attach(
